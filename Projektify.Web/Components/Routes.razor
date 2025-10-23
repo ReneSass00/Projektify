@@ -1,10 +1,18 @@
-﻿@using Projektify.Web.Components.Account.Shared
+﻿@using Microsoft.AspNetCore.Components.Authorization
+@using Projektify.Web.Components.Account.Shared
+@using Projektify.Web.Components.Layout
+
 <Router AppAssembly="typeof(Program).Assembly">
     <Found Context="routeData">
-        <AuthorizeRouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)">
+        <AuthorizeRouteView RouteData="routeData" DefaultLayout="typeof(MainLayout)">
             <NotAuthorized>
+                @* This content is rendered statically *@
                 <RedirectToLogin />
             </NotAuthorized>
+            <Authorizing>
+                @* This content is rendered statically *@
+                <p>Bitte warten, Autorisierung wird geprüft...</p>
+            </Authorizing>
         </AuthorizeRouteView>
         <FocusOnNavigate RouteData="routeData" Selector="h1" />
     </Found>
