@@ -1,0 +1,107 @@
+﻿@* Projektify.Web/Dialogs/CustomerDialog.razor *@
+
+@inject ICustomerService CustomerService
+@inject ISnackbar Snackbar
+@using System.ComponentModel.DataAnnotations
+
+
+@namespace Projektify.Web.Dialogs
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            @if (IsEditMode)
+            {
+                @("Kunde bearbeiten")
+            }
+            else
+            {
+                @("Neuen Kunden anlegen")
+            }
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudForm @ref="_form" @bind-IsValid="@_success" Model="@CustomerModel">
+            <MudGrid Spacing="2">
+
+                <MudItem xs="12">
+                    <MudTextField @bind-Value="CustomerModel.CompanyName" For="@(() => CustomerModel.CompanyName)"
+                                  Label="Firma" Required="true" RequiredError="Der Firmenname ist ein Pflichtfeld." />
+                </MudItem>
+                <MudItem xs="12">
+                    <MudTextField @bind-Value="CustomerModel.ContactName" For="@(() => CustomerModel.ContactName)"
+                                  Label="Ansprechpartner" />
+                </MudItem>
+
+                <MudItem xs="12">
+                    <MudTextField @bind-Value="CustomerModel.Email" For="@(() => CustomerModel.Email)"
+                                  InputType="InputType.Email" Label="E-Mail" Required="true"
+                                  RequiredError="Die E-Mail ist ein Pflichtfeld." Validation="@(new EmailAddressAttribute())" />
+                </MudItem>
+                <MudItem xs="12">
+                    <MudTextField @bind-Value="CustomerModel.PhoneNumber" For="@(() => CustomerModel.PhoneNumber)"
+                                  Label="Telefonnummer" />
+                </MudItem>
+
+                <MudItem xs="12">
+                    <MudTextField @bind-Value="CustomerModel.Address" For="@(() => CustomerModel.Address)"
+                                  Label="Adresse" Lines="3" />
+                </MudItem>
+                <MudItem xs="12">
+                    <MudTextField @bind-Value="CustomerModel.TaxNumber" For="@(() => CustomerModel.TaxNumber)"
+                                  Label="Steuernummer" />
+                </MudItem>
+
+
+            </MudGrid>
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Abbrechen</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="SubmitAsync" Disabled="@(!_success)">Speichern</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter]
+    public Customer CustomerModel { get; set; } = new();
+
+    private bool IsEditMode => CustomerModel.Id != Guid.Empty;
+
+    private MudForm _form = default!;
+    private bool _success;
+
+    private async Task SubmitAsync()
+    {
+        await _form.Validate();
+        if (!_form.IsValid)
+        {
+            return;
+        }
+
+        try
+        {
+            if (IsEditMode)
+            {
+                await CustomerService.UpdateCustomerAsync(CustomerModel);
+                Snackbar.Add("Kunde erfolgreich aktualisiert.", Severity.Success);
+            }
+            else
+            {
+                await CustomerService.CreateCustomerAsync(CustomerModel);
+                Snackbar.Add("Kunde erfolgreich angelegt.", Severity.Success);
+            }
+            MudDialog.Close(DialogResult.Ok(true));
+        }
+        catch (Exception ex)
+        {
+            // Hier könntest du den Fehler noch loggen
+            Snackbar.Add($"Fehler beim Speichern: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+}

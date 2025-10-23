@@ -1,36 +1,134 @@
-﻿@page "/customers"
+﻿@* Projektify.Web/Pages/Customers.razor *@
+
+@page "/customers"
 
 @inject ICustomerService CustomerService
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+
+@using Projektify.Web.Dialogs
 
 <PageTitle>Kunden</PageTitle>
 
 <MudText Typo="Typo.h4" GutterBottom="true">Kundenverwaltung</MudText>
+<MudText Class="mb-4">Hier kannst du alle deine Kunden zentral verwalten, neue anlegen, bestehende bearbeiten oder nicht mehr benötigte löschen.</MudText>
 
-<MudTable Items="@_customerList" Hover="true" Striped="true">
+<MudTable T="Customer" ServerData="@ServerReload"
+          Dense="true" Hover="true" Striped="true" @ref="_table">
     <ToolBarContent>
+        <MudText Typo="Typo.h6">Kundenliste</MudText>
         <MudSpacer />
-        <MudButton Variant="Variant.Filled" Color="Color.Primary">Neuen Kunden anlegen</MudButton>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.Add"
+                   OnClick="() => OpenDialog(Guid.Empty)">
+            Neuen Kunden anlegen
+        </MudButton>
     </ToolBarContent>
     <HeaderContent>
-        <MudTh>Firma</MudTh>
-        <MudTh>Ansprechpartner</MudTh>
-        <MudTh>E-Mail</MudTh>
+        <MudTh><MudTableSortLabel T="Customer" SortLabel="company_name">Firma</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel T="Customer" SortLabel="contact_name">Ansprechpartner</MudTableSortLabel></MudTh>
+        <MudTh><MudTableSortLabel T="Customer" SortLabel="email">E-Mail</MudTableSortLabel></MudTh>
+        <MudTh Style="text-align:right">Aktionen</MudTh>
     </HeaderContent>
     <RowTemplate>
         <MudTd DataLabel="Firma">@context.CompanyName</MudTd>
         <MudTd DataLabel="Ansprechpartner">@context.ContactName</MudTd>
         <MudTd DataLabel="E-Mail">@context.Email</MudTd>
+        <MudTd DataLabel="Aktionen" Style="text-align:right">
+            <MudIconButton Icon="@Icons.Material.Filled.Edit" Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small" OnClick="() => OpenDialog(context.Id)" />
+            <MudIconButton Icon="@Icons.Material.Filled.Delete" Variant="Variant.Filled" Color="Color.Error" Size="Size.Small" Class="ml-2" OnClick="() => DeleteCustomer(context.Id, context.CompanyName)" />
+        </MudTd>
     </RowTemplate>
+    <NoRecordsContent>
+        <MudText>Keine Kunden gefunden. Zeit, den ersten anzulegen!</MudText>
+    </NoRecordsContent>
+    <LoadingContent>
+        <MudText>Lade Daten...</MudText>
+    </LoadingContent>
     <PagerContent>
         <MudTablePager />
     </PagerContent>
 </MudTable>
 
 @code {
-    private List<Customer> _customerList = new();
+    private MudTable<Customer> _table = default!;
 
-    protected override async Task OnInitializedAsync()
+    // Lädt die Daten für die Tabelle (wird bei Initialisierung, Sortierung, Paging aufgerufen)
+    private async Task<TableData<Customer>> ServerReload(TableState state, CancellationToken token)
     {
-        _customerList = await CustomerService.GetAllCustomersAsync();
+        // Hier könntest du später Paging und Sortierung aus dem 'state' an deinen Service übergeben
+        IEnumerable<Customer> data = await CustomerService.GetAllCustomersAsync();
+
+        // Aktuell ohne Paging, also laden wir alle und geben die Gesamtzahl zurück
+        return new TableData<Customer>() { TotalItems = data.Count(), Items = data };
+    }
+
+    private async Task OpenDialog(Guid customerId)
+    {
+        var parameters = new DialogParameters();
+        Customer customerToEdit;
+
+        if (customerId == Guid.Empty)
+        {
+            // Erstellen-Modus
+            customerToEdit = new Customer();
+            parameters.Add(nameof(CustomerDialog.CustomerModel), customerToEdit);
+        }
+        else
+        {
+            // Bearbeiten-Modus
+            customerToEdit = await CustomerService.GetCustomerByIdAsync(customerId);
+            if (customerToEdit == null)
+            {
+                Snackbar.Add("Kunde nicht gefunden.", Severity.Error);
+                return;
+            }
+            parameters.Add(nameof(CustomerDialog.CustomerModel), customerToEdit);
+        }
+
+        var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Small, FullWidth = true };
+        var dialog = DialogService.Show<Projektify.Web.Dialogs.CustomerDialog>(customerId == Guid.Empty ? "Neuen Kunden anlegen" : "Kunde bearbeiten", parameters, options);
+        var result = await dialog.Result;
+
+        if (!result.Canceled)
+        {
+            // Lade die Tabelle neu, um die Änderungen anzuzeigen
+            await _table.ReloadServerData();
+        }
+    }
+
+    private async Task DeleteCustomer(Guid customerId, string customerName)
+    {
+        var parameters = new DialogParameters
+        {
+            { "ContentText", $"Möchtest du den Kunden '{customerName}' wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden." },
+            { "ButtonText", "Löschen" },
+            { "Color", Color.Error }
+        };
+
+        var options = new DialogOptions() { MaxWidth = MaxWidth.ExtraSmall };
+        var result = await DialogService.ShowMessageBox(
+            "Kunde löschen",
+            $"Möchtest du den Kunden '{customerName}' wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.", // Text
+            yesText: "Löschen",
+            cancelText: "Abbrechen",
+            options: new DialogOptions { MaxWidth = MaxWidth.ExtraSmall });
+
+
+
+        if (result.GetValueOrDefault())
+        {
+            try
+            {
+                await CustomerService.DeleteCustomerAsync(customerId);
+                Snackbar.Add($"Kunde '{customerName}' wurde gelöscht.", Severity.Success);
+                await _table.ReloadServerData();
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add($"Fehler beim Löschen: {ex.Message}", Severity.Error);
+            }
+        }
     }
 }
