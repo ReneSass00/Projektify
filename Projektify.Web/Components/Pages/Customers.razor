@@ -1,0 +1,36 @@
+﻿@page "/customers"
+
+@inject ICustomerService CustomerService
+
+<PageTitle>Kunden</PageTitle>
+
+<MudText Typo="Typo.h4" GutterBottom="true">Kundenverwaltung</MudText>
+
+<MudTable Items="@_customerList" Hover="true" Striped="true">
+    <ToolBarContent>
+        <MudSpacer />
+        <MudButton Variant="Variant.Filled" Color="Color.Primary">Neuen Kunden anlegen</MudButton>
+    </ToolBarContent>
+    <HeaderContent>
+        <MudTh>Firma</MudTh>
+        <MudTh>Ansprechpartner</MudTh>
+        <MudTh>E-Mail</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Firma">@context.CompanyName</MudTd>
+        <MudTd DataLabel="Ansprechpartner">@context.ContactName</MudTd>
+        <MudTd DataLabel="E-Mail">@context.Email</MudTd>
+    </RowTemplate>
+    <PagerContent>
+        <MudTablePager />
+    </PagerContent>
+</MudTable>
+
+@code {
+    private List<Customer> _customerList = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        _customerList = await CustomerService.GetAllCustomersAsync();
+    }
+}

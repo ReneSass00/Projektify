@@ -1,0 +1,12 @@
+C:\Users\renes\source\repos\Projektify\Projektify.Core\bin\Debug\net9.0\Projektify.Core.deps.json
+C:\Users\renes\source\repos\Projektify\Projektify.Core\bin\Debug\net9.0\Projektify.Core.dll
+C:\Users\renes\source\repos\Projektify\Projektify.Core\bin\Debug\net9.0\Projektify.Core.pdb
+C:\Users\renes\source\repos\Projektify\Projektify.Core\obj\Debug\net9.0\Projektify.Core.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\renes\source\repos\Projektify\Projektify.Core\obj\Debug\net9.0\Projektify.Core.AssemblyInfoInputs.cache
+C:\Users\renes\source\repos\Projektify\Projektify.Core\obj\Debug\net9.0\Projektify.Core.AssemblyInfo.cs
+C:\Users\renes\source\repos\Projektify\Projektify.Core\obj\Debug\net9.0\Projektify.Core.csproj.CoreCompileInputs.cache
+C:\Users\renes\source\repos\Projektify\Projektify.Core\obj\Debug\net9.0\Projektify.Core.dll
+C:\Users\renes\source\repos\Projektify\Projektify.Core\obj\Debug\net9.0\refint\Projektify.Core.dll
+C:\Users\renes\source\repos\Projektify\Projektify.Core\obj\Debug\net9.0\Projektify.Core.pdb
+C:\Users\renes\source\repos\Projektify\Projektify.Core\obj\Debug\net9.0\ref\Projektify.Core.dll
+C:\Users\renes\source\repos\Projektify\Projektify.Core\obj\Debug\net9.0\Projektify.Core.csproj.AssemblyReference.cache

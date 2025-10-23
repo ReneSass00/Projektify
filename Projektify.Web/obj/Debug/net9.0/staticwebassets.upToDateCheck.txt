@@ -1,0 +1,2 @@
+C:\Users\renes\source\repos\Projektify\Projektify.Web\wwwroot\app.css
+wwwroot\app.css
