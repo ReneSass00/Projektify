@@ -1,0 +1,22 @@
+# Visual Studio
+.vs/
+*.suo
+*.user
+
+# Build results
+[Bb]in/
+[Oo]bj/
+
+# Rider
+.idea/
+
+# User-specific files
+*.rsuser
+*.DotSettings.user
+
+# Mac files
+.DS_Store
+
+# SQLite
+*.db
+*.db-journal
