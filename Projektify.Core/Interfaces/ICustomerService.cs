@@ -1,12 +1,10 @@
 ﻿using Projektify.Core.Entities;
-
 namespace Projektify.Core.Interfaces;
-
 public interface ICustomerService
 {
-    Task<List<Customer>> GetAllCustomersAsync();
+    Task<List<Customer>> GetAllCustomersAsync(bool includeArchived = false);
     Task<Customer?> GetCustomerByIdAsync(Guid id);
     Task CreateCustomerAsync(Customer customer);
     Task UpdateCustomerAsync(Customer customer);
-    Task DeleteCustomerAsync(Guid id);
+    Task ArchiveCustomerAsync(Guid id);
 }
